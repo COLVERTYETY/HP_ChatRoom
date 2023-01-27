@@ -3,9 +3,8 @@
 
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QLabel, QGridLayout, QComboBox, QCheckBox, QRadioButton, QButtonGroup, QGroupBox, QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QMenu, QAction, QInputDialog, QMessageBox
-from PyQt5.QtGui import QIcon, QFont, QCursor
-from PyQt5.QtCore import Qt, QCoreApplication, QThread, pyqtSignal, pyqtSlot, QTimer
-from PyQt5.QtNetwork import QTcpSocket, QHostAddress, QAbstractSocket
+from PyQt5.QtGui import QCursor
+from PyQt5.QtCore import Qt, QTimer
 
 import dvic_chat.client as client
 
@@ -13,6 +12,18 @@ class paramSelectorWidget():
     #  this widgets is used to select the ip, port and username for the chatroom
     def __init__(self, parent):
         self.parent = parent
+        #  check for saved parameters
+        try:
+            with open("dvic_chatroom_params.txt", "r") as f:
+                self.ip = f.readline().strip()
+                self.port = int(f.readline().strip())
+                self.username = f.readline().strip()
+                print("Loaded parameters: " + self.ip + " " + str(self.port) + " " + self.username)
+        except:
+            self.ip = ""
+            self.port = 0
+            self.username = ""
+            print("No parameters found")
         self.widget = QWidget()
         self.widget.setWindowTitle("DVIC Chatroom")
         # self.widget.setWindowIcon(QIcon("dvic_chatroom.png"))
@@ -21,19 +32,19 @@ class paramSelectorWidget():
         self.ipLabel = QLabel("IP:")
         self.ipLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.ipInput = QLineEdit()
-        self.ipInput.setText(" ")
+        self.ipInput.setText(self.ip)
         self.ipInput.setFixedWidth(150)
 
         self.portLabel = QLabel("Port:")
         self.portLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.portInput = QLineEdit()
-        self.portInput.setText(" ")
+        self.portInput.setText(str(self.port))
         self.portInput.setFixedWidth(150)
 
         self.usernameLabel = QLabel("Username:")
         self.usernameLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.usernameInput = QLineEdit()
-        self.usernameInput.setText(" ")
+        self.usernameInput.setText(self.username)
         self.usernameInput.setFixedWidth(150)
 
         self.connectButton = QPushButton("Connect")
@@ -54,6 +65,11 @@ class paramSelectorWidget():
         self.parent.ip = self.ipInput.text()
         self.parent.port = int(self.portInput.text())
         self.parent.username = self.usernameInput.text()
+        #  save parameters
+        with open("dvic_chatroom_params.txt", "w") as f:
+            f.write(self.parent.ip + "\n")
+            f.write(str(self.parent.port) + "\n")
+            f.write(self.parent.username + "\n")
         self.parent.connect()
         self.widget.close()
 
